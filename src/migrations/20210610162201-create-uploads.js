@@ -12,17 +12,17 @@ module.exports = {
         name:{
           type: Sequelize.STRING,
           allowNull: false,
-          require: true
+          required: true
         },
         path:{
           type: Sequelize.STRING,
           allowNull: false,
-          require: true
+          required: true
         },
         id_user:{
           type: Sequelize.INTEGER,
           allowNull: false,
-          require: true,
+          required: true,
           references:{
             model: 'Users',
             key: 'id'
