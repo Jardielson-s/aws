@@ -11,15 +11,18 @@ module.exports = {
         },
         name:{
           type: Sequelize.STRING,
-          allowNull: false
+          allowNull: false,
+          require: true
         },
         path:{
           type: Sequelize.STRING,
-          allowNull: false
+          allowNull: false,
+          require: true
         },
         id_user:{
           type: Sequelize.INTEGER,
           allowNull: false,
+          require: true,
           references:{
             model: 'Users',
             key: 'id'

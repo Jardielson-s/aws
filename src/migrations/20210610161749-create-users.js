@@ -13,6 +13,7 @@ module.exports = {
       name:{
         type: Sequelize.STRING,
         allowNull: false,
+        require: true
       },
       avatar:{
         type: Sequelize.STRING
@@ -20,11 +21,13 @@ module.exports = {
       email:{
         type: Sequelize.STRING,
         allowNull: false,
-        unique: true
+        unique: true,
+        require: true
       },
       password:{
         type: Sequelize.STRING,
         allowNull: false,
+        require: true
       },
       createdAt:{
         type: Sequelize.DATE,
