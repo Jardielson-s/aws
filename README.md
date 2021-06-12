@@ -31,3 +31,7 @@
 
 * paste public:
 <p> have static files  like images, vids, documents, etc. </p>
+
+
+<h3> struct project image </h3>
+![image-1] (https://github.com/Jardielson-s/aws/blob/main/imageOfStruct.png)
