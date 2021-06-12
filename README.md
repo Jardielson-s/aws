@@ -7,15 +7,27 @@
 
 ### scripts for package.json
 
-[comment]: <> ("restart": "cd src && npx sequelize db:migrate:undo:all && npx sequelize db:migrate && clear")
-* this script above formats migrations and restarts
-[comment]: <> ("start": "nodemon src/index.js")
+ <p> "restart": "cd src && npx sequelize db:migrate:undo:all && npx sequelize db:migrate && clear" </p>
+ <p> this script above formats migrations and restarts </p>
+
+<p>"start": "nodemon src/index.js")</p>
 
 ### struct for project
 
-* paste config: [comment]: <> (have mysql database connection setup)
-* paste middleware: [comment]: <> (content all files reference middleware like multer, Authorization)
-* paste migrations: [comment]: <> (database version control)
-* paste controllers: [comment]: <> (content file references to part of the route controller )
-* paste models: [comment]: <> (have models that are database reference tables)
-* paste public: [comment]: <> (have static files  like images, vids, documents, etc)
+* paste config: 
+<p> have mysql database connection setup </p>
+
+* paste middleware:
+<p> content all files reference middleware like multer, Authorization. </p>
+
+* paste migrations:
+<p> database version control. </p>
+
+* paste controllers: 
+<p> content file references to part of the route controller. </p>
+
+* paste models:
+<p> have models that are database reference tables. </p>
+
+* paste public:
+<p> have static files  like images, vids, documents, etc. </p>
