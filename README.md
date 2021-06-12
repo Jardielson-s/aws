@@ -32,5 +32,5 @@
    <p> have static files  like images, vids, documents, etc. </p>
 
 
-<h3> struct project image </h3>
+### struct project image 
 ![alt text](https://github.com/Jardielson-s/aws/blob/main/imageOfStruct.png)
