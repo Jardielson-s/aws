@@ -1,10 +1,11 @@
 ###   tools for project and installation
-
+```
 * npm i express mysql2 multer sequelize
 * npm i jsonwebtoken dotenv cors
 * npm i -D nodemon jest sequelize-cli
 * npm install morgan
-
+* npm start # run project
+```
 
 ### scripts for package.json
 
