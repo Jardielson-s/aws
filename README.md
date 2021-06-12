@@ -3,6 +3,7 @@
 * npm i express mysql2 multer sequelize
 * npm i jsonwebtoken dotenv cors
 * npm i -D nodemon jest sequelize-cli
+* npm install morgan
 
 
 ### scripts for package.json
