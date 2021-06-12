@@ -34,4 +34,4 @@
 
 
 <h3> struct project image </h3>
-![image-1](https://github.com/Jardielson-s/aws/blob/main/imageOfStruct.png)
+![alt text](https://github.com/Jardielson-s/aws/blob/main/imageOfStruct.png)
