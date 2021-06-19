@@ -9,7 +9,7 @@ const server =  express();
 server.use(morgan('dev'));
 server.use(cors());
 server.use(express.json());
-
+server.use('/static',express.static(__dirname + '/public'));
 server.use(router);
 
 

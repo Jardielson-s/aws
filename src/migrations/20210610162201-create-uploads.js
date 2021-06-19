@@ -19,14 +19,13 @@ module.exports = {
           allowNull: false,
           required: true
         },
-        id_user:{
+        UserId:{
           type: Sequelize.INTEGER,
           allowNull: false,
-          required: true,
           references:{
             model: 'Users',
-            key: 'id'
-          }
+            key: 'id',
+          },
         },
         createdAt:{
           type: Sequelize.DATE,

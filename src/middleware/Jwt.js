@@ -1,13 +1,13 @@
-require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
 class Token {
 
-    createToken({ params }){
+    createToken(id){
 
-        return jwt.sign( { params },process.env.SECRET_ENV ,{
-            expiresIn: 86500  
-        })
+        return jwt.sign({ id },process.env.SECRET_ENV ,{ 
+            noTimestamp:true, 
+            expiresIn: '1h'
+         })
     }
 }
 

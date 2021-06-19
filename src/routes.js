@@ -7,9 +7,9 @@ const Controllers = require('./controllers/Controllers');
 const auth = require('./middleware/Authorization');
 
 
-route.get('/list',auth.authenticate,Controllers.getAll);
-route.get('/search', Controllers.get);
+route.get('/search', auth.authenticate, Controllers.get);
 route.post('/create', multer.single('avatar'), Controllers.post);
+route.post('/uploads/:id', multer.single('avatar'), Controllers.uploadFile);
 route.post('/login', Controllers.login);
 route.delete('/delete',Controllers.delete);
 route.path('/update',Controllers.update);

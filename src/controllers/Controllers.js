@@ -1,22 +1,45 @@
 const bcrypt = require('bcrypt');
-const { User, Upload }  = require('../models');
+const { User, Upload }  = require('../app/models');
 const createToken = require('../middleware/Jwt');
 
-async function getEmail(email){
 
-    const res = await User.findOne({ where:{
-        email
-    }})
-    
-    return res;
-}
 
 class Controllers {
 
+    static async  getEmail(email){
+
+        const res = await User.findOne({where:{
+            email
+        }})
+    
+        return res;
+    }
+
+   static async getUploads(id){
+        
+       const response =  await Upload.findAll({ where:{
+           UserId: id
+       }})
+        
+       return response;
+    }
+
 async get(req,res){
-    await User.findAll()
+    
+    const id = req.user.id;
+
+    await Upload.findByPk(id,{
+        include:[{ 
+            model: User,
+            as: 'users'
+        }],
+    })
     .then( response => {
          return res.json({ response });
+    })
+    .catch(err => {
+        console.log(err);  
+        return res.status(500).json({ err })
     });
 }
 
@@ -25,9 +48,8 @@ async post(req,res){
     const { name, email, password } = req.body;
     const hash = bcrypt.hashSync(password, 10);
     const avatar = req.file;
-    console.log(avatar.filename,avatar.path);
 
-    const findEmail = await getEmail(email);
+    const findEmail = await Controllers.getEmail(email);
 
         if(findEmail){
             res.status(404).json({ message : 'email already exist'});
@@ -41,12 +63,23 @@ async post(req,res){
                     email,
                     password: hash
                 })
-                .then(response => {
-                    const id = response.id;
-                    const token = createToken.createToken(id);
-                    return res.status(201).json({ response, token });
+                .then(async function(response){
+
+                        const data = Upload.create({
+                            name: avatar.filename,
+                            path: avatar.path,
+                            UserId: response.id
+                        })
+                        .then(data => {
+                            const id = response.id;
+                            const token = createToken.createToken(id);
+
+                            return res.status(201).json({ response, token, data});
+                        })
+                        
                 })
                 .catch(err => {
+                    console.log(err)
                     return res.status(400).json( err );
                 });
             }catch(err){
@@ -62,7 +95,7 @@ async login(req, res){
     const { email, password } = req.body;
     
    
-    const findEmail = await getEmail(email);
+    const findEmail = await Controllers.getEmail(email);
 
     if(!findEmail)
         return res.status(404).json({message:'email is invalid'});
@@ -73,14 +106,37 @@ async login(req, res){
         return res.status(404).json({message:'password is invalid'});
 
     const id = findEmail.id;
-    const token = createToken.createToken({ id });
-    return res.status(200).json({ findEmail, token })
+    const uploads = await Controllers.getUploads(id);
 
+    const token = createToken.createToken({ id });
+    return res.status(200).json({ findEmail, token, uploads })
+
+}
+
+async uploadFile(req, res){
+
+    const id = req.params.id;
+    const file = req.file;
+    
+    if(!file)
+        return res.status(404).json({ message: 'provider file'});
+    
+   const response = await Upload.create({
+        name: file.originalname,
+        path: file.path,
+        id_user: id
+    })
+    .then(response =>  {
+       return res.status(200).json({ response });
+    })
+    .catch(err => {return res.status(500).json({ message: 'server unavaileble'})});
+    
 }
 
 
 async delete(req,res){
 
+    const id = req.params.id;
 
     return res.json({message:'this is route delete'});
 }
@@ -89,13 +145,6 @@ async update(req,res){
 
     return res.json({message:'this is route update'});
 }
-
-async getAll(req,res){
-
-
-    return res.json({message:'this is route getAll'});
-}
-
 
 }
 

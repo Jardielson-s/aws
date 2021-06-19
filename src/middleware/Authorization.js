@@ -1,4 +1,3 @@
-require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
 
@@ -6,7 +5,6 @@ class Authorization{
 
     authenticate(req, res, next){
         const token = req.headers['x-access-token']
-        
         if(!token)
           return res.status(400).json({ auth:false , message: 'no token provide'});
 
@@ -16,7 +14,7 @@ class Authorization{
                 return res.status(400).json({ auth: false, message: 'failed to authenticate token'})
             }
             
-            req.userId = decode.id;
+            req.user = decode;
             
             next();
         })
