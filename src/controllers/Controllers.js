@@ -2,7 +2,7 @@ const  { Op }  = require('sequelize');
 const bcrypt = require('bcrypt');
 const { User, Upload }  = require('../app/models');
 const createToken = require('../middleware/Jwt');
-
+const fs = require('fs');
 
 
 class Controllers {
@@ -13,24 +13,23 @@ class Controllers {
             email
         }, include:['UploadId']})
     
-        return res;
+        return res.email;
     }
 
-   static async getUploads(id){
+   static async getUploads(id, idUser){
         
-       const response =  await Upload.findAll({ where:{
-           UserId: id
-       }})
+       const response =  await Upload.findOne({ where:{
+           [Op.and]:[{  id }, { UserId: idUser }]
+       }}).catch(err => console.log(err))
         
        return response;
     }
 
 async sarch(req,res){
     
-    const { id } = req.user.id;
     const { name } = req.query;
-  
-    await Upload.findAll({ where: { [Op.and]:[{ name },{ UserId: id }]}
+
+    await Upload.findAll({ where: { [Op.and]:[{ name },{ UserId: req.user.id }]}
     })
     .then( response => {
          return res.json({ response });
@@ -47,13 +46,20 @@ async post(req,res){
     const hash = bcrypt.hashSync(password, 10);
     const avatar = req.file;
 
-    const findEmail = await Controllers.getEmail(email);
+    try
+    {
+
+        const findEmail = await Controllers.getEmail(email);
 
         if(findEmail){
+            console.log(findEmail)
+            fs.unlink(avatar.path, function(err){
+                if(err)
+                  console.log(err)
+                })
             res.status(404).json({ message : 'email already exist'});
         }else{
     
-            try{
                 
                 const response = await User.create({
                     name,
@@ -64,7 +70,7 @@ async post(req,res){
                 .then(async function(response){
 
                         const data = Upload.create({
-                            name: avatar.filename,
+                            name: avatar.originalname,
                             path: avatar.path,
                             UserId: response.id
                         })
@@ -77,14 +83,22 @@ async post(req,res){
                         
                 })
                 .catch(err => {
-                    console.log(err)
-                    return res.status(400).json( err );
+                   
+                    fs.unlink(avatar.path);
+                    return res.status(400).json({ error: 'bad request' });
+
                 });
-            }catch(err){
-                console.log(err);
-                return res.status(404).json({message: 'bad request'})
             }
-}
+        }catch(err){
+                fs.unlink(avatar.path, function(err){
+                    
+                    if(err)
+                       console.log(err);
+
+                    console.log('deleted with sucessfull')
+                });
+                return res.status(500).json({message: 'internal server error'})
+            }
 }
 
 
@@ -134,9 +148,32 @@ async uploadFile(req, res){
 
 async delete(req,res){
 
+     const id = req.params.id;
+     const idUser = req.user.id;
+     const upload =  await Controllers.getUploads(id, idUser);
 
-    return res.json({message:'this is route delete'});
+     
+    try{
+    
+    await Upload.destroy({ where: { UserId: id }})
+     .then(() => {
+         fs.unlink(upload.path,function(err){
+             if(err)
+                console.log(err);
+            console.log('deleted with sucess');
+         })
+        return res.status(200).json({message:'deleted is success'});
+     })
+     .catch(err=>{
+         console.log(err)
+         return res.status(400).json({ message: 'could not delete the file'});
+     })
+ }catch(err){
+    return res.status(500).json({ message: 'server unavaileble'});
+ }
+    
 }
+
 async update(req,res){
 
 
