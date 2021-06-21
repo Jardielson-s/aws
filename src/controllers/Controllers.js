@@ -13,11 +13,11 @@ class Controllers {
             email
         }, include:['UploadId']})
     
-        return res.email;
+        return res;
     }
 
    static async getUploads(id, idUser){
-        
+        console.log(idUser)
        const response =  await Upload.findOne({ where:{
            [Op.and]:[{  id }, { UserId: idUser }]
        }}).catch(err => console.log(err))
@@ -51,7 +51,7 @@ async post(req,res){
 
         const findEmail = await Controllers.getEmail(email);
 
-        if(findEmail){
+        if(findEmail.email){
             console.log(findEmail)
             fs.unlink(avatar.path, function(err){
                 if(err)
@@ -121,13 +121,13 @@ async login(req, res){
     const uploads = findEmail.UploadId;
     const token = createToken.createToken({ id });
 
-    return res.status(200).json({ findEmail, token, token })
+    return res.status(200).json({ findEmail, token, uploads })
 
 }
 
 async uploadFile(req, res){
 
-    const id = req.user.id;
+    const { id } = req.user.id;
     const file = req.file;
     
     if(!file)
@@ -148,14 +148,14 @@ async uploadFile(req, res){
 
 async delete(req,res){
 
-     const id = req.params.id;
-     const idUser = req.user.id;
-     const upload =  await Controllers.getUploads(id, idUser);
+     const idUpload = req.params.id;
+     const { id }  = req.user.id;
 
+     const upload =  await Controllers.getUploads(idUpload, id);
      
     try{
     
-    await Upload.destroy({ where: { UserId: id }})
+    await Upload.destroy({ where: { id: upload.id }})
      .then(() => {
          fs.unlink(upload.path,function(err){
              if(err)
