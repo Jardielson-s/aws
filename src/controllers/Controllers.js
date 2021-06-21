@@ -1,3 +1,4 @@
+const  { Op }  = require('sequelize');
 const bcrypt = require('bcrypt');
 const { User, Upload }  = require('../app/models');
 const createToken = require('../middleware/Jwt');
@@ -10,7 +11,7 @@ class Controllers {
 
         const res = await User.findOne({where:{
             email
-        }})
+        }, include:['UploadId']})
     
         return res;
     }
@@ -24,15 +25,12 @@ class Controllers {
        return response;
     }
 
-async get(req,res){
+async sarch(req,res){
     
-    const id = req.user.id;
-
-    await Upload.findByPk(id,{
-        include:[{ 
-            model: User,
-            as: 'users'
-        }],
+    const { id } = req.user.id;
+    const { name } = req.query;
+  
+    await Upload.findAll({ where: { [Op.and]:[{ name },{ UserId: id }]}
     })
     .then( response => {
          return res.json({ response });
@@ -106,16 +104,16 @@ async login(req, res){
         return res.status(404).json({message:'password is invalid'});
 
     const id = findEmail.id;
-    const uploads = await Controllers.getUploads(id);
-
+    const uploads = findEmail.UploadId;
     const token = createToken.createToken({ id });
-    return res.status(200).json({ findEmail, token, uploads })
+
+    return res.status(200).json({ findEmail, token, token })
 
 }
 
 async uploadFile(req, res){
 
-    const id = req.params.id;
+    const id = req.user.id;
     const file = req.file;
     
     if(!file)
@@ -124,7 +122,7 @@ async uploadFile(req, res){
    const response = await Upload.create({
         name: file.originalname,
         path: file.path,
-        id_user: id
+        UserId: id
     })
     .then(response =>  {
        return res.status(200).json({ response });
@@ -136,7 +134,6 @@ async uploadFile(req, res){
 
 async delete(req,res){
 
-    const id = req.params.id;
 
     return res.json({message:'this is route delete'});
 }
