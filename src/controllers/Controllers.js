@@ -12,7 +12,7 @@ class Controllers {
         const res = await User.findOne({where:{
             email
         }, include:['UploadId']})
-    
+
         return res;
     }
 
@@ -28,10 +28,11 @@ class Controllers {
 async sarch(req,res){
     
     const { name } = req.query;
-
-    await Upload.findAll({ where: { [Op.and]:[{ name },{ UserId: req.user.id }]}
+    
+    Upload.findAll({ where: { [Op.and]:[{ name },{ UserId: req.user.id.id }]}
     })
     .then( response => {
+
          return res.json({ response });
     })
     .catch(err => {
@@ -51,23 +52,15 @@ async post(req,res){
 
         const findEmail = await Controllers.getEmail(email);
 
-        if(findEmail.email){
-            console.log(findEmail)
-            fs.unlink(avatar.path, function(err){
-                if(err)
-                  console.log(err)
-                })
-            res.status(404).json({ message : 'email already exist'});
-        }else{
-    
-                
-                const response = await User.create({
+        if(!findEmail){
+
+                User.create({
                     name,
                     avatar: avatar.path,
                     email,
                     password: hash
                 })
-                .then(async function(response){
+                .then(function(response){
 
                         const data = Upload.create({
                             name: avatar.originalname,
@@ -88,6 +81,12 @@ async post(req,res){
                     return res.status(400).json({ error: 'bad request' });
 
                 });
+            }else{
+                fs.unlink(avatar.path, function(err){
+                    if(err)
+                      console.log(err)
+                    })
+                res.status(404).json({ message : 'email already exist'});
             }
         }catch(err){
                 fs.unlink(avatar.path, function(err){
@@ -97,6 +96,7 @@ async post(req,res){
 
                     console.log('deleted with sucessfull')
                 });
+
                 return res.status(500).json({message: 'internal server error'})
             }
 }
@@ -106,14 +106,14 @@ async login(req, res){
 
     const { email, password } = req.body;
     
-   
+
     const findEmail = await Controllers.getEmail(email);
 
     if(!findEmail)
         return res.status(404).json({message:'email is invalid'});
     
-    const compare = bcrypt.compare(password, findEmail.email);
-
+    const compare =  await bcrypt.compare(password, findEmail.password);
+    
     if(!compare)
         return res.status(404).json({message:'password is invalid'});
 
@@ -155,29 +155,47 @@ async delete(req,res){
      
     try{
     
-    await Upload.destroy({ where: { id: upload.id }})
+     Upload.destroy({ where: { id: upload.id }})
      .then(() => {
          fs.unlink(upload.path,function(err){
              if(err)
                 console.log(err);
-            console.log('deleted with sucess');
          })
         return res.status(200).json({message:'deleted is success'});
      })
-     .catch(err=>{
-         console.log(err)
-         return res.status(400).json({ message: 'could not delete the file'});
-     })
+     
  }catch(err){
-    return res.status(500).json({ message: 'server unavaileble'});
- }
+    return res.status(400).json({ message: 'could not delete the file'});
+}
     
 }
 
 async update(req,res){
 
 
-    return res.json({message:'this is route update'});
+    try{
+
+        const { email, password } = req.body;
+        const avatar = req.file;
+
+        const hash = bcrypt.hashSync(password, 10);
+        const { id } = req.user.id;
+       
+        const user = await User.update({
+            email,
+            password: hash,
+            avatar: avatar.path,
+        }, {
+            where: { id: id } 
+        })
+
+        return res.status(200).json({ message: 'user updated' });
+    }catch(err){
+        console.log(err)
+        res.status(500).json({ message: "can't possible update"})
+    }
+    
+    
 }
 
 }

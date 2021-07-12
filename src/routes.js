@@ -12,7 +12,7 @@ route.post('/create', multer.single('avatar'), Controllers.post);
 route.post('/uploads', auth.authenticate, multer.single('avatar'), Controllers.uploadFile);
 route.post('/login', Controllers.login);
 route.delete('/delete/:id', auth.authenticate, Controllers.delete);
-route.path('/update',Controllers.update);
+route.post('/update',auth.authenticate, multer.single('avatar'), Controllers.update);
 
 
 
