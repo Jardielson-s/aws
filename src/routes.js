@@ -7,12 +7,12 @@ const Controllers = require('./controllers/Controllers');
 const auth = require('./middleware/Authorization');
 
 
-route.get('/list',auth.authenticate,Controllers.getAll);
-route.get('/search', Controllers.get);
+route.get('/search', auth.authenticate, Controllers.sarch);
 route.post('/create', multer.single('avatar'), Controllers.post);
+route.post('/uploads', auth.authenticate, multer.single('avatar'), Controllers.uploadFile);
 route.post('/login', Controllers.login);
-route.delete('/delete',Controllers.delete);
-route.path('/update',Controllers.update);
+route.delete('/delete/:id', auth.authenticate, Controllers.delete);
+route.post('/update',auth.authenticate, multer.single('avatar'), Controllers.update);
 
 
 
