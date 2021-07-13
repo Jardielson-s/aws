@@ -191,7 +191,9 @@ async update(req,res){
 
         return res.status(200).json({ message: 'user updated' });
     }catch(err){
-        console.log(err)
+
+        fs.unlink(avatar.path);
+
         res.status(500).json({ message: "can't possible update"})
     }
     
