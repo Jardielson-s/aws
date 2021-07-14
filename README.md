@@ -11,9 +11,17 @@
 
 ### scripts for package.json
 
-<p>"restart": "cd src && npx sequelize db:migrate:undo:all && npx sequelize db:migrate && clear" </p>
+<p>"restart" </p>
+```
+"npx sequelize db:migrate:undo:all && npx sequelize db:migrate"
+```
 <p> this script above formats migrations and restarts </p>
-<p>"start": "nodemon src/index.js")</p>
+
+<p>"start"</p>
+```
+"nodemon src/index.js"
+```
+<p> the script above starts the project </p>
 
 ### struct for project
 
