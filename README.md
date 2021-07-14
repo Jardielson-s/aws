@@ -4,6 +4,8 @@
 * npm i jsonwebtoken dotenv cors
 * npm i -D nodemon jest sequelize-cli
 * npm install morgan
+* npm install multer-s3
+* npm install aws-sdk
 * npm start # run project
 ```
 

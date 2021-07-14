@@ -3,7 +3,13 @@ const bcrypt = require('bcrypt');
 const { User, Upload }  = require('../app/models');
 const createToken = require('../middleware/Jwt');
 const fs = require('fs');
-
+const aws = require('aws-sdk');
+const { path } = require('../routes');
+const s3 = new aws.S3({
+    accessKeyId: process.env.ID_KEY_ACCESS,
+    secretAccessKey: process.env.KEY_ACCESS_SECRET,
+    region: process.env.REGION_AWS
+});
 
 class Controllers {
 
@@ -25,7 +31,7 @@ class Controllers {
        return response;
     }
 
-async sarch(req,res){
+async search(req,res){
     
     const { name } = req.query;
     
@@ -46,7 +52,9 @@ async post(req,res){
     const { name, email, password } = req.body;
     const hash = bcrypt.hashSync(password, 10);
     const avatar = req.file;
-
+    console.log(avatar)
+    const { location } = avatar;
+   
     try
     {
 
@@ -56,7 +64,7 @@ async post(req,res){
 
                 User.create({
                     name,
-                    avatar: avatar.path,
+                    avatar: avatar.path || location,
                     email,
                     password: hash
                 })
@@ -64,7 +72,7 @@ async post(req,res){
 
                         const data = Upload.create({
                             name: avatar.originalname,
-                            path: avatar.path,
+                            path: avatar.path || location,
                             UserId: response.id
                         })
                         .then(data => {
@@ -76,27 +84,15 @@ async post(req,res){
                         
                 })
                 .catch(err => {
-                   
-                    fs.unlink(avatar.path);
+                
                     return res.status(400).json({ error: 'bad request' });
 
                 });
             }else{
-                fs.unlink(avatar.path, function(err){
-                    if(err)
-                      console.log(err)
-                    })
                 res.status(404).json({ message : 'email already exist'});
             }
         }catch(err){
-                fs.unlink(avatar.path, function(err){
-                    
-                    if(err)
-                       console.log(err);
-
-                    console.log('deleted with sucessfull')
-                });
-
+               
                 return res.status(500).json({message: 'internal server error'})
             }
 }
@@ -129,14 +125,15 @@ async uploadFile(req, res){
 
     const { id } = req.user.id;
     const file = req.file;
-    
+    const { location } = file;
     if(!file)
         return res.status(404).json({ message: 'provider file'});
     
    const response = await Upload.create({
         name: file.originalname,
-        path: file.path,
-        UserId: id
+        path: file.path || location,
+        UserId: id,
+        key: file.key
     })
     .then(response =>  {
        return res.status(200).json({ response });
@@ -152,15 +149,20 @@ async delete(req,res){
      const { id }  = req.user.id;
 
      const upload =  await Controllers.getUploads(idUpload, id);
-     
+   
     try{
     
      Upload.destroy({ where: { id: upload.id }})
      .then(() => {
-         fs.unlink(upload.path,function(err){
-             if(err)
-                console.log(err);
-         })
+        if(process.env.TYPE_STORAGE === 'S3'){
+
+           s3.deleteObject({
+                Bucket: "uploadsnodejs",
+                Key: upload.key
+            }).promise();
+        }else{
+            fs.unlink(upload.path);
+        }
         return res.status(200).json({message:'deleted is success'});
      })
      
@@ -177,27 +179,69 @@ async update(req,res){
 
         const { email, password } = req.body;
         const avatar = req.file;
-
+       
         const hash = bcrypt.hashSync(password, 10);
         const { id } = req.user.id;
        
+        const findEmail = User.findOne({where:{ email }});
+        if(findEmail){
+            if(process.env.TYPE_STORAGE === 'S3'){
+                s3.deleteObject({
+                     Bucket: "uploadsnodejs",
+                     Key: avatar.key
+                 }).promise();
+             }else{
+                 fs.unlink(upload.path);
+             }
+
+            return res.status(400).json({ message: 'email already exist'});
+         }
         const user = await User.update({
             email,
             password: hash,
-            avatar: avatar.path,
+            avatar: avatar.path || avatar.location,
         }, {
-            where: { id: id } 
-        })
+            where: {
+              id: id
+            }  
+        }).catch(err => console.log(err))
 
+        await Upload.create({
+            name: avatar.originalname,
+            path: avatar.path || avatar.location,
+            UserId: id,
+            key: avatar.key
+        });
+        
         return res.status(200).json({ message: 'user updated' });
     }catch(err){
 
-        fs.unlink(avatar.path);
+        if(process.env.TYPE_STORAGE === 'S3'){
+            s3.deleteObject({
+                 Bucket: "uploadsnodejs",
+                 Key: avatar.key
+             }).promise();
+         }else{
+             fs.unlink(upload.path);
+         }
 
         res.status(500).json({ message: "can't possible update"})
     }
     
     
+}
+
+async list (req, res){
+
+    const { id } = req.user.id;
+  
+    const files = await Upload.findAll({
+        where:{
+            UserId: id
+        }
+    })
+
+    return res.status(200).json( files );
 }
 
 }
