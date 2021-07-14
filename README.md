@@ -38,4 +38,4 @@
 
 ### struct project image 
 
-![alt text](https://github.com/Jardielson-s/aws/blob/main/imageOfStruct.png)
+![alt text](https://github.com/Jardielson-s/aws/blob/main/images/imageOfStruct.png)
