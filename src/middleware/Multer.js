@@ -4,13 +4,8 @@ const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
 const path = require('path');
 const uploadFolder = path.resolve(__dirname,'../public/images');
-/*
-const storage = new aws.S3({
-    accessKeyId: process.env.ID_KEY_ACCESS,
-    secretAccessKey: process.env.KEY_ACCESS_SECRET,
-    region: process.env.REGION_AWS
-})
-*/
+
+
 const localTypes = {
     local: multer({
 
@@ -44,33 +39,5 @@ const localTypes = {
      })
 }
 
-const Upload = multer({
-
-    storage: multer.diskStorage({
-        destination: uploadFolder,
-        filename(req, file, callback){
-            const second = new Date().getSeconds().toString();
-            const filename = `${second} - ${file.originalname }`
-
-            return callback(null, filename);
-        },
-    }),
-
-});
-/*
-const UploadMulterS3 = multerS3({
-
-    storage: multer.diskStorage({
-        destination: uploadFolder,
-        filename(req, file, callback){
-            const second = new Date().getSeconds().toString();
-            const filename = `${second} - ${file.originalname }`
-
-            return callback(null, filename);
-        },
-    }),
-
-});
-*/
 
 module.exports = localTypes[process.env.TYPE_STORAGE];

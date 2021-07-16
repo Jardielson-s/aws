@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "restart": "cd src && npx sequelize db:migrate:undo:all && npx sequelize db:migrate && clear",
+    "restart": "npx sequelize db:migrate:undo:all && npx sequelize db:migrate",
     "start": "nodemon src/index.js"
   },
   "keywords": [],

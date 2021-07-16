@@ -3,13 +3,19 @@ const bcrypt = require('bcrypt');
 const { User, Upload }  = require('../app/models');
 const createToken = require('../middleware/Jwt');
 const fs = require('fs');
-const aws = require('aws-sdk');
-const { path } = require('../routes');
-const s3 = new aws.S3({
-    accessKeyId: process.env.ID_KEY_ACCESS,
-    secretAccessKey: process.env.KEY_ACCESS_SECRET,
-    region: process.env.REGION_AWS
-});
+const  s3  = require('../awsConfig/aws');
+
+function deleteObjectOfBuck(){
+    if(process.env.TYPE_STORAGE === 'S3'){
+
+        s3.deleteObject({
+             Bucket: "uploadsnodejs",
+             Key: upload.key
+         }).promise();
+     }else{
+         fs.unlink(upload.path);
+     }
+}
 
 class Controllers {
 
@@ -23,7 +29,7 @@ class Controllers {
     }
 
    static async getUploads(id, idUser){
-        console.log(idUser)
+       
        const response =  await Upload.findOne({ where:{
            [Op.and]:[{  id }, { UserId: idUser }]
        }}).catch(err => console.log(err))
@@ -35,15 +41,15 @@ async search(req,res){
     
     const { name } = req.query;
     
-    Upload.findAll({ where: { [Op.and]:[{ name },{ UserId: req.user.id.id }]}
+    Upload.findAll({ where: { [Op.and]:[{ name },{ UserId: req.user.id }]}
     })
     .then( response => {
 
          return res.json({ response });
     })
     .catch(err => {
-        console.log(err);  
-        return res.status(500).json({ err })
+        //console.log(err);  
+        return res.status(500).json( err )
     });
 }
 
@@ -52,7 +58,7 @@ async post(req,res){
     const { name, email, password } = req.body;
     const hash = bcrypt.hashSync(password, 10);
     const avatar = req.file;
-    console.log(avatar)
+    
     const { location } = avatar;
    
     try
@@ -73,7 +79,8 @@ async post(req,res){
                         const data = Upload.create({
                             name: avatar.originalname,
                             path: avatar.path || location,
-                            UserId: response.id
+                            UserId: response.id,
+                            key: avatar.key
                         })
                         .then(data => {
                             const id = response.id;
@@ -84,15 +91,16 @@ async post(req,res){
                         
                 })
                 .catch(err => {
-                
+                    deleteObjectOfBuck();
                     return res.status(400).json({ error: 'bad request' });
 
                 });
             }else{
+                deleteObjectOfBuck();
                 res.status(404).json({ message : 'email already exist'});
             }
         }catch(err){
-               
+                deleteObjectOfBuck();
                 return res.status(500).json({message: 'internal server error'})
             }
 }
@@ -123,22 +131,30 @@ async login(req, res){
 
 async uploadFile(req, res){
 
-    const { id } = req.user.id;
+    
     const file = req.file;
-    const { location } = file;
-    if(!file)
+    
+    if(!file){
+
         return res.status(404).json({ message: 'provider file'});
+    }
+
+    const { location } = file;
+    
     
    const response = await Upload.create({
         name: file.originalname,
         path: file.path || location,
-        UserId: id,
+        UserId: req.user.id,
         key: file.key
     })
     .then(response =>  {
        return res.status(200).json({ response });
     })
-    .catch(err => {return res.status(500).json({ message: 'server unavaileble'})});
+    .catch(err => {
+        deleteObjectOfBuck();
+        return res.status(500).json({ message: 'server unavaileble'})
+    });
     
 }
 
@@ -146,27 +162,20 @@ async uploadFile(req, res){
 async delete(req,res){
 
      const idUpload = req.params.id;
-     const { id }  = req.user.id;
-
-     const upload =  await Controllers.getUploads(idUpload, id);
-   
+    
+     const upload =  await Controllers.getUploads(idUpload, req.user.id);
+    
     try{
     
      Upload.destroy({ where: { id: upload.id }})
      .then(() => {
-        if(process.env.TYPE_STORAGE === 'S3'){
+        deleteObjectOfBuck();
 
-           s3.deleteObject({
-                Bucket: "uploadsnodejs",
-                Key: upload.key
-            }).promise();
-        }else{
-            fs.unlink(upload.path);
-        }
         return res.status(200).json({message:'deleted is success'});
      })
      
  }catch(err){
+    deleteObjectOfBuck();
     return res.status(400).json({ message: 'could not delete the file'});
 }
     
@@ -181,18 +190,11 @@ async update(req,res){
         const avatar = req.file;
        
         const hash = bcrypt.hashSync(password, 10);
-        const { id } = req.user.id;
        
-        const findEmail = User.findOne({where:{ email }});
+        const findEmail = await User.findOne({where:{ email }});
+        
         if(findEmail){
-            if(process.env.TYPE_STORAGE === 'S3'){
-                s3.deleteObject({
-                     Bucket: "uploadsnodejs",
-                     Key: avatar.key
-                 }).promise();
-             }else{
-                 fs.unlink(upload.path);
-             }
+            deleteObjectOfBuck();
 
             return res.status(400).json({ message: 'email already exist'});
          }
@@ -202,29 +204,23 @@ async update(req,res){
             avatar: avatar.path || avatar.location,
         }, {
             where: {
-              id: id
+              id: req.user.id
             }  
-        }).catch(err => console.log(err))
+        }).catch(err =>{ 
+            deleteObjectOfBuck();
+        })
 
         await Upload.create({
             name: avatar.originalname,
             path: avatar.path || avatar.location,
-            UserId: id,
+            UserId: req.user.id.id,
             key: avatar.key
         });
         
         return res.status(200).json({ message: 'user updated' });
     }catch(err){
 
-        if(process.env.TYPE_STORAGE === 'S3'){
-            s3.deleteObject({
-                 Bucket: "uploadsnodejs",
-                 Key: avatar.key
-             }).promise();
-         }else{
-             fs.unlink(upload.path);
-         }
-
+        deleteObjectOfBuck();
         res.status(500).json({ message: "can't possible update"})
     }
     
@@ -233,11 +229,10 @@ async update(req,res){
 
 async list (req, res){
 
-    const { id } = req.user.id;
-  
+
     const files = await Upload.findAll({
         where:{
-            UserId: id
+            UserId: req.user.id
         }
     })
 
