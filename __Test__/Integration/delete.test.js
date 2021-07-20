@@ -40,7 +40,7 @@ describe('testing delete router', () => {
 
     it('delete file with id', async () =>{
 
-         user.then(async user =>{
+         await user.then(async user =>{
 
             const response = await supertest(app)
               .post('/login')
@@ -73,12 +73,12 @@ describe('testing delete router', () => {
   
           });
 
-    });
+    },50000);
 
 
     it('delete file with id not exist in the table',async () =>{
 
-          user.then(async user =>{
+        await user.then(async user =>{
 
             const response = await supertest(app)
               .post('/login')

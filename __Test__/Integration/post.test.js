@@ -31,7 +31,7 @@ describe('test post router', () => {
   
     it('creation router', async () => {
         
-        await user.then(async user =>{
+        await  user.then(async user =>{
             const response = await supertest(app).post("/create")
             .field('name', user.name)
             .field('email', user.email)
@@ -48,7 +48,7 @@ describe('test post router', () => {
 
     it('create user with email already', async () => {
         
-        await user.then(async user =>{
+         await user.then(async user =>{
             const response = await supertest(app).post("/create")
             .field('name', user.name)
             .field('email', user.email)

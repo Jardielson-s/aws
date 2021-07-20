@@ -68,13 +68,13 @@ describe('testing update router', () => {
                expect(responseUpdate.ok).toBeFalsy();
           });
 
-    });
+    }, 50000);
 
 
     it('updating user with new credencials', async () => {
 
 
-        await user.then(async user =>{
+         await user.then(async user =>{
 
             const response = await supertest(app)
               .post('/login')

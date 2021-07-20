@@ -64,13 +64,13 @@ describe('testing upload router', () => {
             
            
         
-    })
+    }, 50000)
 
 
-    it('testing send file without token', async() => {
+    it('testing send file without token', async () => {
 
 
-        await user.then(async user =>{
+      await user.then(async user =>{
 
           const response = await supertest(app)
             .post('/login')

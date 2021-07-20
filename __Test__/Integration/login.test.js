@@ -35,7 +35,7 @@ describe('testing login router ', () => {
 
     it('test validate credentials',async  () =>{
          
-        await user.then(async user =>{
+       user.then(async user =>{
 
             const response = await supertest(app)
             .post('/login')
@@ -74,7 +74,7 @@ describe('testing login router ', () => {
          
       
 
-        await user.then(async user =>{
+     await user.then(async user =>{
 
             const response = await supertest(app)
             .post('/login')

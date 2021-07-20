@@ -2,7 +2,7 @@ const supertest = require('supertest');
 const app = require('../../src/index');
 const faker = require('faker');
 const factory = require('factory-girl').factory;
-const { User, Upload } = require('../../src/app/models');
+const { User } = require('../../src/app/models');
 
 
 
@@ -41,7 +41,7 @@ describe('testing list router', () => {
         it('testin list files', async () => {
 
 
-           user.then(async user =>{
+            await user.then(async user =>{
 
                 const response = await supertest(app)
                   .post('/login')
@@ -68,8 +68,10 @@ describe('testing list router', () => {
                    expect(responseList.body).toBeDefined()
                    expect(responseList.ok).toBeTruthy();
                    
+
+                   
               });
     
 
-        });
+        }, 50000);
 });
