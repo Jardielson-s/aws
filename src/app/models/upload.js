@@ -15,7 +15,9 @@ module.exports =  (Sequelize, DataTypes) => {
    Upload.associate = function(models){
         Upload.belongsTo(models.User,{
             foreignKey: 'UserId',
-            as: 'users'
+            as: 'users',
+            onDelete: 'cascade',
+            onUpdate: 'cascade'
         });
     }
     return Upload;

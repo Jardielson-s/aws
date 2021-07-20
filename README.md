@@ -6,6 +6,10 @@
 * npm install morgan
 * npm install multer-s3
 * npm install aws-sdk
+* npm i -D sqlite3 # database to developerment 
+* npm i faker #  fackers datas generate
+* npm i factory-girl # attributes generate
+* npm i -D jest # make integration and united test
 * npm start # run project
 ```
 
@@ -51,3 +55,16 @@ nodemon src/index.js
 ### struct project image 
 
 ![alt text](https://github.com/Jardielson-s/aws/blob/main/images/imageOfStruct.png)
+
+
+### teste
+
+<p>
+in testing use sqlite3 with development database, use jest, faker and factory-girl to generate dummy data.
+</p>
+<p>
+run test
+<p>
+```
+npm test
+```

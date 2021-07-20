@@ -19,7 +19,7 @@ const localTypes = {
             },
         })
     }),
-    S3: multer ({
+    s3: multer ({
         storage: multerS3({
          s3: new aws.S3({
              accessKeyId: process.env.ID_KEY_ACCESS,

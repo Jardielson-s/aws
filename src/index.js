@@ -13,7 +13,4 @@ server.use(express.json());
 server.use("/files", express.static(path.resolve(__dirname ,".", "public" , "images")));
 server.use(router);
 
-
-server.listen(process.env.PORT || 3000,()=>{
-    console.log('runnig in port ', process.env.PORT || 3000);
-})
+module.exports = server
