@@ -2,6 +2,6 @@ node_modules
 images
 .env.exemple
 __Test__
-covarage
+coverage
 jest.config.js
 data.sqlite3
