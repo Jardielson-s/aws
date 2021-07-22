@@ -30,9 +30,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">65% </span>
+                <span class="strong">75.76% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>26/40</span>
+                <span class='fraction'>25/33</span>
             </div>
         
             
@@ -314,17 +314,17 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -405,7 +405,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -509,7 +509,7 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -561,18 +561,18 @@ const fs = require('fs');
 const  s3  = require('../awsConfig/aws');
 &nbsp;
 async function  deleteObjectOfBuck(path, Key){
-    if(process.env.TYPE_STORAGE === 'S3')<span class="branch-0 cbranch-no" title="branch not covered" >{</span>
-<span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >        s3.deleteObject({</span>
-<span class="cstat-no" title="statement not covered" >             Bucket: "uploadsnodejs",</span>
-<span class="cstat-no" title="statement not covered" >             Key: Key</span>
-<span class="cstat-no" title="statement not covered" >         }).promise();</span>
-     }else{
-         
-         fs.unlink(path, function(err){
-             
-        });
-     }
+    if(process.env.TYPE_STORAGE === 's3'){
+&nbsp;
+        s3.deleteObject({
+             Bucket: "uploadsnodejs",
+             Key: Key
+         }).promise();
+     }<span class="branch-0 cbranch-no" title="branch not covered" >else{</span>
+<span class="cstat-no" title="statement not covered" >         </span>
+<span class="cstat-no" title="statement not covered" >         fs.unlink(path, function(err){</span>
+<span class="cstat-no" title="statement not covered" >             </span>
+<span class="cstat-no" title="statement not covered" >        });</span>
+<span class="cstat-no" title="statement not covered" >     }</span>
 }
 &nbsp;
 class Controllers {
@@ -628,7 +628,7 @@ async post(req,res){
 &nbsp;
                 User.create({
                     name,
-                    avatar: <span class="branch-0 cbranch-no" title="branch not covered" >avatar.path || avatar.location,</span>
+                    avatar: avatar.path || avatar.location,
                     email,
                     password: hash
                 })
@@ -636,7 +636,7 @@ async post(req,res){
 &nbsp;
                         const data = Upload.create({
                             name: avatar.originalname,
-                            path: <span class="branch-0 cbranch-no" title="branch not covered" >avatar.path || avatar.location,</span>
+                            path: avatar.path || avatar.location,
                             UserId: response.id,
                             key: avatar.key
                         })
@@ -700,7 +700,7 @@ async uploadFile(req, res){
     
    const response = await Upload.create({
         name: file.originalname,
-        path: <span class="branch-0 cbranch-no" title="branch not covered" >file.path || file.location,</span>
+        path: file.path || file.location,
         UserId: req.user.id.id,
         key: file.key
     })
@@ -750,14 +750,14 @@ async update(req,res){
         const findEmail = await User.findOne({where:{ email }});
         
         if(findEmail){
-            deleteObjectOfBuck(<span class="branch-0 cbranch-no" title="branch not covered" >avatar.path || avatar.key);</span>
+            deleteObjectOfBuck(avatar.path, avatar.key);
 &nbsp;
             return res.status(400).json({ message: 'email already exist'});
          }
         const user = await User.update({
             email,
             password: hash,
-            avatar: <span class="branch-0 cbranch-no" title="branch not covered" >avatar.path || avatar.location,</span>
+            avatar: avatar.path || avatar.location,
         }, {
             where: {
               id: req.user.id
@@ -768,7 +768,7 @@ async update(req,res){
 &nbsp;
         await Upload.create({
             name: avatar.originalname,
-            path: <span class="branch-0 cbranch-no" title="branch not covered" >avatar.path || avatar.location,</span>
+            path: avatar.path || avatar.location,
             UserId: req.user.id.id,
             key: avatar.key
         });
@@ -808,7 +808,7 @@ module.exports = new Controllers();</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank">istanbul</a>
-                at Tue Jul 20 2021 15:29:35 GMT-0300 (GMT-03:00)
+                at Thu Jul 22 2021 19:07:18 GMT-0300 (GMT-03:00)
             </div>
         </div>
         <script src="../../prettify.js"></script>

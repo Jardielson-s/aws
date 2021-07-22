@@ -6,7 +6,7 @@ const fs = require('fs');
 const  s3  = require('../awsConfig/aws');
 
 async function  deleteObjectOfBuck(path, Key){
-    if(process.env.TYPE_STORAGE === 'S3'){
+    if(process.env.TYPE_STORAGE === 's3'){
 
         s3.deleteObject({
              Bucket: "uploadsnodejs",
@@ -195,7 +195,7 @@ async update(req,res){
         const findEmail = await User.findOne({where:{ email }});
         
         if(findEmail){
-            deleteObjectOfBuck(avatar.path || avatar.key);
+            deleteObjectOfBuck(avatar.path, avatar.key);
 
             return res.status(400).json({ message: 'email already exist'});
          }

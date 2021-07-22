@@ -65,6 +65,11 @@ in testing use sqlite3 with development database, use jest, faker and factory-gi
 <p>
 run test
 <p>
+
 ```
 npm test
 ```
+
+<p>
+in the test you choose where the storage is located in the local or s3, just select in the environment variables
+</p>
