@@ -16,7 +16,9 @@ class Authorization{
                 return res.status(400).json({ auth: false, message: 'failed to authenticate token'})
             }
             
-            req.user = decode;
+            const { id } = decode;
+
+            req.user = id;
             
             next();
         })
