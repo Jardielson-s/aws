@@ -54,7 +54,7 @@ nodemon src/index.js
 
 ### struct project image 
 
-![alt text](https://github.com/Jardielson-s/aws/blob/main/images/imageOfStruct.png)
+![alt text](https://github.com/Jardielson-s/aws/blob/main/images/stuct.png)
 
 
 ### teste
