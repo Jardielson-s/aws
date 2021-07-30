@@ -8,6 +8,8 @@ module.exports =  (Sequelize, DataTypes) => {
         path: DataTypes.STRING,
         UserId: DataTypes.INTEGER,
         key: DataTypes.STRING
+    },{
+        paranoid: true
     });
     
 

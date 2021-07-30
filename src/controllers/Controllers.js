@@ -35,7 +35,7 @@ class Controllers {
 
    static async getUploads(id, idUser){
        
-       const response =  await Upload.findOne({ where:{
+       const response =  await Upload.findOne({paranoid: false, where:{
            [Op.and]:[{  id }, { UserId: idUser }]
        }})
         
@@ -146,7 +146,7 @@ async uploadFile(req, res){
    const response = await Upload.create({
         name: file.originalname,
         path: file.path || file.location,
-        UserId: req.user.id.id,
+        UserId: req.user.id,
         key: file.key
     })
     .then(response =>  {
@@ -160,27 +160,44 @@ async uploadFile(req, res){
     
 }
 
-
 async delete(req,res){
 
      const idUpload = req.params.id;
      
-     const upload =  await Controllers.getUploads(idUpload, req.user.id.id);
+     const upload =  await Controllers.getUploads(idUpload, req.user.id);
     
     try{
     
      Upload.destroy({ where: { id: upload.id }})
      .then(() => {
-        deleteObjectOfBuck(upload.path, upload.key);
-
         return res.status(200).json({message:'deleted is success'});
      })
      
  }catch(err){
-
+     
     return res.status(400).json({ message: 'could not delete the file'});
 }
     
+}
+
+
+async deleteUser(req, res){
+      
+    const  id  = req.user.id;
+   
+    try{
+            await User.destroy({
+                where:{
+                    id
+                }
+            });
+
+            return res.status(200).json({message:'deleted is success'});
+    }catch(err){
+
+        return res.status(500).json({message: 'could not delete the User'})
+    }
+   
 }
 
 async update(req,res){
@@ -230,15 +247,98 @@ async update(req,res){
 
 async list (req, res){
 
-
+    
     const files = await Upload.findAll({
         where:{
-            UserId: req.user.id.id
+            UserId: req.user.id
         }
     });
 
     return res.status(200).json( files );
 }
+
+
+async recoverUser(req, res){
+
+    const { email } = req.body;
+
+try{
+    const user = await User.restore({
+        where:{
+                email 
+        }
+    }) ;
+    console.log(user)
+    return res.status(200).json({message: 'user restored'});
+ }catch(err){
+    return res.status(400).json({ message: 'Unable to recover user' });
+ }
+}
+
+async recoverUpload(req, res){
+
+    const id = req.params.id;
+    const  UserId  = req.user.id.id;
+    
+try{
+    const upload = await Upload.restore({
+        where:{
+            [Op.and]: [{ id }, { UserId}]
+        }
+    }) ;
+    console.log(upload)
+    return res.status(200).json({message: 'upload restored'});
+ }catch(err){
+    return res.status(400).json({ message: 'Unable to recover upload' });
+ }
+}
+
+async trash(req, res){
+
+    const   id   = req.user.id.id;
+    
+try{
+    const uploads = await Upload.findAll({
+          paranoid: false,
+          where:{
+              [Op.and]: [{ UserId: id }, { deletedAt: { [Op.ne]: null }}]
+          }
+    });
+    
+    return res.status(200).json({ uploads });
+ }catch(err){
+    return res.status(400).json({ message: 'not find uploads' });
+ }
+}
+
+
+async deleteForceUpload(req,res){
+
+    const idUpload = req.params.id;
+    
+    const upload =  await Controllers.getUploads(idUpload, req.user.id.id);
+   
+   try{
+   
+    Upload.destroy({
+        paranoid: false,
+        force:  true,
+        where:{
+            [Op.and]: [{ UserId: upload.UserId }, { id: upload.id },{ deletedAt: { [Op.ne]: null }}]
+        }
+  }).then(() => {
+       deleteObjectOfBuck(upload.path, upload.key);
+
+       return res.status(200).json({message:'deleted is success'});
+    })
+    
+}catch(err){
+    
+   return res.status(400).json({ message: 'could not delete the file'});
+}
+   
+}
+
 
 }
 

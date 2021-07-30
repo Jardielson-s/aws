@@ -4,6 +4,8 @@ module.exports = (sequelize,DataTypes)=>{
         avatar: DataTypes.STRING,
         email: DataTypes.STRING,
         password: DataTypes.STRING,
+      },{
+        paranoid: true
       }
     );
 
