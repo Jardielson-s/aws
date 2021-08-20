@@ -65,23 +65,22 @@ class  ControllersUploads {
 
 async uploadFile(req, res){
 
-    
     const file = req.file;
-
+    
     if(!file){
 
         return res.status(400).json({ message: 'provider file'});
     }
 
-    
-   const response = await Upload.create({
+  
+   const response = Upload.create({
         name: file.originalname,
         path: file.path || file.location,
         UserId: req.user.id,
         key: file.key
     })
     .then(response =>  {
-       return res.status(200).json({ response });
+       return res.status(200).json({ message: "done upload" });
     })
     .catch(err => {
         console.log(err)
@@ -116,14 +115,25 @@ async delete(req,res){
 
 async list (req, res){
 
-    
-    const files = await Upload.findAll({
+    const file = await Upload.findAll({
         where:{
             UserId: req.user.id
         }
     });
 
-    return res.status(200).json( files );
+    
+    const user = await User.findOne({
+        where:{
+            id: req.user.id
+        }
+    })
+    const files = {
+        files: file,
+        email: user.email || null,
+        avatar: user.avatar
+    }
+
+    return res.status(200).json(files);
 }
 
 
@@ -148,20 +158,20 @@ try{
 
 async trash(req, res){
 
-    const   id   = req.user.id;
+    const  id  = req.user.id;
+    console.log(id)
+    try{
+        const uploads = await Upload.findAll({
+              paranoid: false,
+              where:{
+                  [Op.and]: [{ UserId: id }, { deletedAt: { [Op.ne]: null }}]
+              }
+        });
     
-try{
-    const uploads = await Upload.findAll({
-          paranoid: false,
-          where:{
-              [Op.and]: [{ UserId: id }, { deletedAt: { [Op.ne]: null }}]
-          }
-    });
-    
-    return res.status(200).json({ uploads });
- }catch(err){
-    return res.status(400).json({ message: 'not find uploads' });
- }
+        return res.status(200).json(uploads || []);
+     }catch(err){
+        return res.status(400).json({ message: 'not find uploads' });
+     }
 }
 
 

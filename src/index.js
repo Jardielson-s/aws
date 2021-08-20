@@ -10,7 +10,7 @@ const server =  express();
 server.use(morgan('dev'));
 server.use(cors());
 server.use(express.json());
-server.use("/files", express.static(path.resolve(__dirname ,".", "public" , "images")));
+server.use(express.static('public'));
 server.use(router);
 
-module.exports = server
+module.exports = server;

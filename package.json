@@ -6,7 +6,7 @@
   "scripts": {
     "restart": "npx sequelize db:migrate:undo:all && npx sequelize db:migrate",
     "start": "nodemon src/server.js",
-    "test": "jest"
+    "test": "jest -i uploadFile.test.js"
   },
   "keywords": [],
   "author": "",

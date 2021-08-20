@@ -1,13 +1,16 @@
+require('dotenv').config();
 const supertest = require('supertest');
 const app = require('../../src/index');
 const faker = require('faker');
 const factory = require('factory-girl').factory;
 const { User, Upload } = require('../../src/app/models');
+const jwt = require('jsonwebtoken');
+const ControllersUploads = require('../../src/controllers/ControllersUploads');
 
 
 
 const filePath = `/home/jardielson/exerciciosDeNodejs/aws/images/imageOfStruct.png`;
-// foreing key of upload in create roueter
+// foreing key of upload in create router
 let UserId = 0
 
 async function createUserInModel(){
@@ -27,7 +30,17 @@ async function createUserInModel(){
     .field('password', user.password)
     .attach('avatar',filePath)
     //console.log(upload)
-    UserId = upload.body.data.id
+    
+
+//    UserId = upload.body.data.id;
+    jwt.verify(upload.body.token,process.env.SECRET_ENV, (err, decode) => {
+        if(err){
+            console.log(err);
+        }
+        const { id } = decode
+
+        UserId = id;
+    })
     return user;
 }
 

@@ -45,17 +45,40 @@ class ControllersUsers {
 
 
 async post(req,res){
-
     const { name, email, password } = req.body;
     const hash = bcrypt.hashSync(password, 10);
     const avatar = req.file;
-    
-    try
-    {
 
-        const findEmail = await ControllersUsers.getEmail(email);
-      
-        if(!findEmail){
+
+
+    const findEmail = await ControllersUsers.getEmail(email).catch(err => console.log(err));
+    try{
+        if(!avatar){
+           
+            if(!findEmail){
+
+                User.create({
+                    name,
+                    avatar: null,
+                    email,
+                    password: hash
+                })
+                .then(function(response){
+                    
+                            const id = response.id;
+                            const token = createToken.createToken({ id });
+
+                            return res.status(201).json({ message: "user created with success", token});
+                })
+                .catch(err => {
+                    return res.json({ error: 'bad request' });
+
+                });
+            }else{
+                return res.json({ message : 'email already exist'});
+            }
+        }else{
+            if(!findEmail){
 
                 User.create({
                     name,
@@ -64,8 +87,8 @@ async post(req,res){
                     password: hash
                 })
                 .then(function(response){
-
-                        const data = Upload.create({
+                    
+                     Upload.create({
                             name: avatar.originalname,
                             path: avatar.path || avatar.location,
                             UserId: response.id,
@@ -73,26 +96,33 @@ async post(req,res){
                         })
                         .then(data => {
                             const id = response.id;
-                            const token = createToken.createToken(id);
+                            const token = createToken.createToken({ id });
 
-                            return res.status(201).json({ response, token, data});
+                            return res.status(201).json({ message: "user created with success", token});
                         })
                         
                 })
                 .catch(err => {
                     deleteObjectOfBuck(avatar.path, avatar.key);
-                    return res.status(404).json({ error: 'bad request' });
+                    return res.json({ error: 'bad request' });
 
                 });
             }else{
                 deleteObjectOfBuck(avatar.path, avatar.key);
-                res.status(400).json({ message : 'email already exist'});
+                return res.json({ message : 'email already exist'});
             }
+        }
+    }catch(err){
+            return res.status(500).json({message: 'internal server error'})
+    }
+    
+   /* try{
+       
         }catch(err){
-
-            deleteObjectOfBuck(avatar.path, avatar.key);
+           // deleteObjectOfBuck(avatar.path, avatar.key);
             return res.status(500).json({message: 'internal server error'})
         }
+        */
 }
 
 
@@ -112,10 +142,9 @@ async login(req, res){
         return res.status(400).json({message:'password is invalid'});
 
     const id = findEmail.id;
-    const uploads = findEmail.UploadId;
     const token = createToken.createToken({ id });
 
-    return res.status(200).json({ findEmail, token, uploads })
+    return res.status(200).json({ token })
 
 }
 
@@ -144,45 +173,67 @@ async update(req,res){
 
     const { email, password } = req.body;
     const avatar = req.file;
-
+    
+    
     try{
        
-        const hash = bcrypt.hashSync(password, 10);
-       
-        const findEmail = await User.findOne({where:{ email }});
+        if(email){
+            const findEmail = await User.findOne({where:{ email }});
         
-        if(findEmail){
-            deleteObjectOfBuck(avatar.path, avatar.key);
+             if(findEmail){
+              
+                 return res.status(400).json({ message: 'email already exist'});
+            }
 
-            return res.status(400).json({ message: 'email already exist'});
-         }
-        const user = await User.update({
-            email,
-            password: hash,
-            avatar: avatar.path || avatar.location,
-        }, {
-            where: {
-              id: req.user.id
-            }  
-        }).catch(err =>{ 
-            deleteObjectOfBuck(avatar.path, avatar.key);
-        })
+            const user = await User.update({
+                email: email,
+            }, {
+                where: {
+                  id: req.user.id
+                }  
+            })
+            
+            return res.status(200).json({ message: 'user updated' });
+        }else if(password){
 
-        await Upload.create({
-            name: avatar.originalname,
-            path: avatar.path || avatar.location,
-            UserId: req.user.id,
-            key: avatar.key
-        });
+           const hash = bcrypt.hashSync(password, 10);
+
+           const user = await User.update({
+               password: hash,
+           }, {
+               where: {
+                 id: req.user.id
+               }  
+           })
+           
+           return res.status(200).json({ message: 'user updated' });
+        }else{
         
-        return res.status(200).json({ message: 'user updated' });
+            const user = await User.update({
+                avatar: avatar.path || avatar.location,
+            }, {
+                where: {
+                  id: req.user.id
+                }  
+            }).catch(err =>{ 
+                deleteObjectOfBuck(avatar.path, avatar.key);
+            })
+
+            await Upload.create({
+                name: avatar.originalname,
+                path: avatar.path || avatar.location,
+                UserId: req.user.id,
+                key: avatar.key
+            });
+
+            return res.status(200).json({ message: 'user updated' });
+        }
     }catch(err){
            
             deleteObjectOfBuck(avatar.path, avatar.key);
             res.status(500).json({ message: "can't possible update"})
     }
     
-   
 }
 
 

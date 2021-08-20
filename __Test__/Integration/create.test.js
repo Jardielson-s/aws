@@ -38,10 +38,10 @@ describe('test post router', () => {
             .field('password', user.password)
             .attach('avatar',filePath)
              
-             
+            // console.log(response)
              expect(response.status).toBe(201);
              expect(response.body.token).not.toBeNull()
-             expect(response.body.response.id).toBeDefined()
+             expect(response.body.message).toBe("user created with success");
 
         })
     });
