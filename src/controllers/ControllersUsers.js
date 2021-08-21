@@ -173,7 +173,7 @@ async update(req,res){
 
     const { email, password } = req.body;
     const avatar = req.file;
-    
+
     
     try{
        
@@ -229,8 +229,10 @@ async update(req,res){
             return res.status(200).json({ message: 'user updated' });
         }
     }catch(err){
-           
-            deleteObjectOfBuck(avatar.path, avatar.key);
+            if(avatar){
+                deleteObjectOfBuck(avatar.path, avatar.key);
+            }
+            
             res.status(500).json({ message: "can't possible update"})
     }
     
