@@ -1,16 +1,6 @@
 ###   tools for project and installation
 ```
-* npm i express mysql2 multer sequelize
-* npm i jsonwebtoken dotenv cors
-* npm i -D nodemon jest sequelize-cli
-* npm install morgan
-* npm install multer-s3
-* npm install aws-sdk
-* npm i -D sqlite3 # database to developerment 
-* npm i faker #  fackers datas generate
-* npm i factory-girl # attributes generate
-* npm i -D jest # make integration and united test
-* npm start # run project
+npm i
 ```
 
 ### scripts for package.json
